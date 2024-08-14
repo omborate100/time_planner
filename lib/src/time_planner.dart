@@ -32,7 +32,7 @@ class TimePlanner extends StatefulWidget {
 
   //Whether the time is displayed on the axis of the tim or on the center of the timeblock. Default is false.
   final bool setTimeOnAxis;
-
+  final double? titleHeight;
   /// Time planner widget
   const TimePlanner({
     Key? key,
@@ -44,6 +44,7 @@ class TimePlanner extends StatefulWidget {
     this.use24HourFormat = false,
     this.setTimeOnAxis = false,
     this.currentTimeAnimation,
+    this.titleHeight
   }) : super(key: key);
   @override
   _TimePlannerState createState() => _TimePlannerState();
@@ -60,15 +61,15 @@ class _TimePlannerState extends State<TimePlanner> {
 
   /// check input value rules
   void _checkInputValue() {
-    if (widget.startHour > widget.endHour) {
-      throw FlutterError("Start hour should be lower than end hour");
-    } else if (widget.startHour < 0) {
-      throw FlutterError("Start hour should be larger than 0");
-    } else if (widget.endHour > 23) {
-      throw FlutterError("Start hour should be lower than 23");
-    } else if (widget.headers.isEmpty) {
-      throw FlutterError("header can't be empty");
-    }
+    // if (widget.startHour > widget.endHour) {
+    //   throw FlutterError("Start hour should be lower than end hour");
+    // } else if (widget.startHour < 0) {
+    //   throw FlutterError("Start hour should be larger than 0");
+    // } else if (widget.endHour > 23) {
+    //   throw FlutterError("Start hour should be lower than 23");
+    // } else if (widget.headers.isEmpty) {
+    //   throw FlutterError("header can't be empty");
+    // }
   }
 
   /// create local style
@@ -87,19 +88,23 @@ class _TimePlannerState extends State<TimePlanner> {
 
   /// store input data to static values
   void _initData() {
-    _checkInputValue();
+    // _checkInputValue();
     _convertToLocalStyle();
     config.horizontalTaskPadding = style.horizontalTaskPadding;
     config.cellHeight = style.cellHeight;
     config.cellWidth = style.cellWidth;
-    config.totalHours = (widget.endHour - widget.startHour).toDouble();
+    config.totalHours = widget.endHour<=widget.startHour
+    ?(24-widget.startHour+widget.endHour).toDouble()
+    :(widget.endHour - widget.startHour).toDouble();
     config.totalDays = widget.headers.length;
     config.startHour = widget.startHour;
+    config.endHour = widget.endHour;
     config.use24HourFormat = widget.use24HourFormat;
     config.setTimeOnAxis = widget.setTimeOnAxis;
     config.borderRadius = style.borderRadius;
     isAnimated = widget.currentTimeAnimation;
     tasks = widget.tasks ?? [];
+    print("TotalHours:${config.totalHours}");
   }
 
   @override
@@ -144,7 +149,12 @@ class _TimePlannerState extends State<TimePlanner> {
     });
     return GestureDetector(
       child: Container(
-        color: style.backgroundColor,
+        decoration: BoxDecoration(
+          color: style.backgroundColor,
+          borderRadius: BorderRadius.circular(8), // Adjust the radius as needed
+          border:Border(left: BorderSide(color: Colors.white, width: 1.0))
+        ),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -153,23 +163,29 @@ class _TimePlannerState extends State<TimePlanner> {
             SingleChildScrollView(
               controller: dayHorizontalController,
               scrollDirection: Axis.horizontal,
-              physics: const NeverScrollableScrollPhysics(),
+              physics: NeverScrollableScrollPhysics(),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  const SizedBox(
-                    width: 60,
+                  // Container(
+                  //   color: Colors.red,
+                  //   width: 40,
+                  // ),
+                  SizedBox(
+                    width:config.cellWidth!*.84,
+                    height:widget.titleHeight,
+
                   ),
                   for (int i = 0; i < config.totalDays; i++) widget.headers[i],
                 ],
               ),
             ),
-            Container(
-              height: 1,
-              color: style.dividerColor ?? Theme.of(context).primaryColor,
-            ),
+            // Container(
+            //   height: 1,
+            //   color: Color.fromRGBO(12, 141, 205, 1),
+            // ),
             Expanded(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -183,35 +199,43 @@ class _TimePlannerState extends State<TimePlanner> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              //first number is start hour and second number is end hour
-                              for (int i = widget.startHour;
-                                  i <= widget.endHour;
-                                  i++)
-                                Padding(
-                                  // we need some additional padding horizontally if we're showing in am/pm format
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: !config.use24HourFormat ? 4 : 0,
-                                  ),
-                                  child: TimePlannerTime(
-                                    // this returns the formatted time string based on the use24HourFormat argument.
-                                    time: formattedTime(i),
-                                    setTimeOnAxis: config.setTimeOnAxis,
-                                  ),
-                                )
-                            ],
-                          ),
-                          Container(
-                            height:
-                                (config.totalHours * config.cellHeight!) + 80,
-                            width: 1,
-                            color: style.dividerColor ??
-                                Theme.of(context).primaryColor,
-                          ),
+                         Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  mainAxisAlignment: MainAxisAlignment.start,
+  mainAxisSize: MainAxisSize.min,
+  children: <Widget>[
+    // Check if end hour is less than or equal to start hour
+    if (widget.endHour <= widget.startHour) ...[
+      // Loop from start hour to 23 (end of day)
+      for (int i = widget.startHour; i <= 23; i++)
+        TimePlannerTime(
+          time: formattedTime(i),
+          setTimeOnAxis: config.setTimeOnAxis,
+        ),
+      // Loop from 0 to end hour
+      for (int i = 0; i <= widget.endHour; i++)
+        TimePlannerTime(
+          time: formattedTime(i),
+          setTimeOnAxis: config.setTimeOnAxis,
+        ),
+    ] else ...[
+      // Loop from start hour to end hour
+      for (int i = widget.startHour; i <= widget.endHour; i++)
+        TimePlannerTime(
+          time: formattedTime(i),
+          setTimeOnAxis: config.setTimeOnAxis,
+        ),
+    ],
+  ],
+),
+
+                          // Container(
+                          //   height:
+                          //   (config.totalHours * config.cellHeight!) + 80,
+                          //   width: 1,
+                          //   color: style.dividerColor ??
+                          //       Theme.of(context).primaryColor,
+                          // ),
                         ],
                       ),
                     ),
@@ -254,7 +278,7 @@ class _TimePlannerState extends State<TimePlanner> {
                       SizedBox(
                         height: (config.totalHours * config.cellHeight!) + 80,
                         width:
-                            (config.totalDays * config.cellWidth!).toDouble(),
+                        (config.totalDays * config.cellWidth!).toDouble(),
                         child: Stack(
                           children: <Widget>[
                             Column(
@@ -269,7 +293,7 @@ class _TimePlannerState extends State<TimePlanner> {
                                             ? style.interstitialOddColor
                                             : style.interstitialEvenColor,
                                         height:
-                                            (config.cellHeight! - 1).toDouble(),
+                                        (config.cellHeight! - 1).toDouble(),
                                       ),
                                       // The horizontal lines tat divides the rows
                                       //TODO: Make a configurable color for this (maybe a size too)
@@ -287,16 +311,16 @@ class _TimePlannerState extends State<TimePlanner> {
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: <Widget>[
-                                      SizedBox(
-                                        width:
-                                            (config.cellWidth! - 1).toDouble(),
-                                      ),
+                                      // SizedBox(
+                                      //   width:
+                                      //   (config.cellWidth! - 1).toDouble(),
+                                      // ),
                                       // The vertical lines that divides the columns
                                       //TODO: Make a configurable color for this (maybe a size too)
                                       Container(
                                         width: 1,
                                         height: (config.totalHours *
-                                                config.cellHeight!) +
+                                            config.cellHeight!) +
                                             config.cellHeight!,
                                         color: Colors.black12,
                                       )
@@ -344,12 +368,8 @@ class _TimePlannerState extends State<TimePlanner> {
                             Column(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
-                                SizedBox(
-                                  height: (config.cellHeight! - 1).toDouble(),
-                                ),
-                                const Divider(
-                                  height: 1,
-                                ),
+                                
+                               
                               ],
                             )
                         ],
@@ -361,14 +381,12 @@ class _TimePlannerState extends State<TimePlanner> {
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
-                                SizedBox(
-                                  width: (config.cellWidth! - 1).toDouble(),
-                                ),
+                               
                                 Container(
                                   width: 1,
                                   height:
-                                      (config.totalHours * config.cellHeight!) +
-                                          config.cellHeight!,
+                                  (config.totalHours * config.cellHeight!) +
+                                      config.cellHeight!,
                                   color: Colors.black12,
                                 )
                               ],
@@ -395,10 +413,10 @@ class _TimePlannerState extends State<TimePlanner> {
       return hour.toString() + ':00';
     } else {
       // we format the time to use the am/pm scheme
-      if (hour == 0) return "12:00 am";
-      if (hour < 12) return "$hour:00 am";
-      if (hour == 12) return "12:00 pm";
-      return "${hour - 12}:00 pm";
+      if (hour == 0) return "12:00 AM";
+      if (hour < 12) return "$hour:00 AM";
+      if (hour == 12) return "12:00 PM";
+      return "${hour - 12}:00 PM";
     }
   }
 }
