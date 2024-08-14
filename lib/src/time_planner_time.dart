@@ -16,13 +16,14 @@ class TimePlannerTime extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: config.cellHeight!.toDouble() - 1,
-      width: 60,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 0.0),
-        child: setTimeOnAxis! ? Text(time!) : Center(child: Text(time!)),
+    return Container(
+      height: config.cellHeight!.toDouble(),
+      width: config.cellWidth!*.84,
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: Colors.white, width: 1.0),right: BorderSide(color: Colors.white, width: 1.0)),
+          color: Color.fromRGBO(109, 187, 255, 1),
       ),
+      child: setTimeOnAxis! ? Text(time!,style: TextStyle(fontWeight: FontWeight.w400, fontFamily: 'Poppins', fontSize: 12,color: Color.fromRGBO(255, 255, 255, 1)),) : Center(child: Text(time!,style: TextStyle(fontWeight: FontWeight.w400, fontFamily: 'Poppins', fontSize: 12,color: Color.fromRGBO(255, 255, 255, 1)),)),
     );
   }
 }

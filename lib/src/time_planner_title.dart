@@ -16,6 +16,8 @@ class TimePlannerTitle extends StatelessWidget {
 
   /// Text style for date text
   final TextStyle? dateStyle;
+final double? width;
+final double? height;
 
   /// Title widget for time planner
   const TimePlannerTitle({
@@ -24,13 +26,19 @@ class TimePlannerTitle extends StatelessWidget {
     this.date,
     this.titleStyle,
     this.dateStyle,
+    this.width,
+    this.height
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 50,
-      width: config.cellWidth!.toDouble(),
+    return Container(
+        height: height,
+        width:width,
+      decoration: BoxDecoration(
+        border: Border(left: BorderSide(color: Colors.white, width: 1.0),bottom: BorderSide(color: Colors.white, width: 1.0)),
+        color: Color.fromRGBO(109, 187, 255, 1)
+      ),
       child: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -41,13 +49,16 @@ class TimePlannerTitle extends StatelessWidget {
               style: titleStyle ?? const TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(
-              height: 3,
+              height: 2,
             ),
-            Text(
+            date!=null
+            ?Text(
               date ?? '',
               style: dateStyle ??
-                  const TextStyle(color: Colors.grey, fontSize: 12),
-            ),
+                  const TextStyle(color: Colors.white, fontSize: 12),
+            )
+            :SizedBox(),
+
           ],
         ),
       ),

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class TimePlannerStyle {
   /// Height of each cell in time planner, default is 90.
-  int? cellHeight;
+  double? cellHeight;
 
   /// Width of each cell in time planner, default is 80.
-  int? cellWidth;
+  double? cellWidth;
 
   /// Horizontal padding (Left and Right) of each task in time planner, default is 0.
   double? horizontalTaskPadding;
